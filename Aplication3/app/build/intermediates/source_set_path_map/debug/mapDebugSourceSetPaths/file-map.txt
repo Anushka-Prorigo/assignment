@@ -25,10 +25,10 @@ com.example.aplication3.app-appcompat-1.7.0-23 /Users/anushkap/.gradle/caches/8.
 com.example.aplication3.app-cardview-1.0.0-24 /Users/anushkap/.gradle/caches/8.9/transforms/de1ddce191c56d1b203a452572d15d42/transformed/cardview-1.0.0/res
 com.example.aplication3.app-lifecycle-runtime-2.6.2-25 /Users/anushkap/.gradle/caches/8.9/transforms/e07c23af11d5aa9ca18978df6f8fc945/transformed/lifecycle-runtime-2.6.2/res
 com.example.aplication3.app-viewpager2-1.0.0-26 /Users/anushkap/.gradle/caches/8.9/transforms/fc14cdcca241859c1a8c6f48597aa51f/transformed/viewpager2-1.0.0/res
-com.example.aplication3.app-pngs-27 /Users/anushkap/AndroidStudioProjects/Aplication3/app/build/generated/res/pngs/debug
-com.example.aplication3.app-resValues-28 /Users/anushkap/AndroidStudioProjects/Aplication3/app/build/generated/res/resValues/debug
-com.example.aplication3.app-packageDebugResources-29 /Users/anushkap/AndroidStudioProjects/Aplication3/app/build/intermediates/incremental/debug/packageDebugResources/merged.dir
-com.example.aplication3.app-packageDebugResources-30 /Users/anushkap/AndroidStudioProjects/Aplication3/app/build/intermediates/incremental/debug/packageDebugResources/stripped.dir
-com.example.aplication3.app-debug-31 /Users/anushkap/AndroidStudioProjects/Aplication3/app/build/intermediates/merged_res/debug/mergeDebugResources
-com.example.aplication3.app-debug-32 /Users/anushkap/AndroidStudioProjects/Aplication3/app/src/debug/res
-com.example.aplication3.app-main-33 /Users/anushkap/AndroidStudioProjects/Aplication3/app/src/main/res
+com.example.aplication3.app-pngs-27 /Users/anushkap/Aplication3/app/build/generated/res/pngs/debug
+com.example.aplication3.app-resValues-28 /Users/anushkap/Aplication3/app/build/generated/res/resValues/debug
+com.example.aplication3.app-packageDebugResources-29 /Users/anushkap/Aplication3/app/build/intermediates/incremental/debug/packageDebugResources/merged.dir
+com.example.aplication3.app-packageDebugResources-30 /Users/anushkap/Aplication3/app/build/intermediates/incremental/debug/packageDebugResources/stripped.dir
+com.example.aplication3.app-debug-31 /Users/anushkap/Aplication3/app/build/intermediates/merged_res/debug/mergeDebugResources
+com.example.aplication3.app-debug-32 /Users/anushkap/Aplication3/app/src/debug/res
+com.example.aplication3.app-main-33 /Users/anushkap/Aplication3/app/src/main/res
