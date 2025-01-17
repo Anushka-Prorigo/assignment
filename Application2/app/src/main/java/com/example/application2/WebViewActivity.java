@@ -1,31 +1,47 @@
 package com.example.application2;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
+import com.example.application2.speech.ISpeechRecognizer;
+import com.example.application2.speech.RecognizerType;
+import com.example.application2.speech.SpeechRecognitionListener;
+import com.example.application2.speech.SpeechRecognizerProvider;
 
 import java.util.ArrayList;
 
 public class WebViewActivity extends AppCompatActivity {
 
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 1;
-    private SpeechRecognizer speechRecognizer;
+    private ISpeechRecognizer speechRecognizer;
     private WebView webview;
-    private boolean isSignInPageLoaded = false;
+    private TextView txtinput;
+    private String previouscmd = "";
 
+    private boolean isSignInPageLoaded = false;
+    private String[] permissions = {Manifest.permission.RECORD_AUDIO};
+
+
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,7 +52,10 @@ public class WebViewActivity extends AppCompatActivity {
         } else {
             initializeSpeechRecognizer();
         }
+        ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
 
+
+        txtinput = findViewById(R.id.txtinput);
         webview = findViewById(R.id.webview);
         WebSettings webSettings = webview.getSettings();
         webSettings.setJavaScriptEnabled(true);
@@ -57,6 +76,8 @@ public class WebViewActivity extends AppCompatActivity {
                     Log.e("TAG", "Autofilling credentials");
                     autofillCredentials();
                 }
+
+                initializeSpeechRecognizer();
             }
         });
 
@@ -65,83 +86,64 @@ public class WebViewActivity extends AppCompatActivity {
     }
 
     private void initializeSpeechRecognizer() {
-        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
-        final Intent speechIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        speechIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        if (speechRecognizer == null) {
+            speechRecognizer = SpeechRecognizerProvider.getRecognizer(RecognizerType.Native, this);
+            if (speechRecognizer != null) {
+                speechRecognizer.setRecognitionListener(new SpeechRecognitionListener() {
+                    @Override
+                    public void onReceiveSpeechRecognitionResult(@NonNull final String speechResult) {
+                        String recognizedText = speechResult;
+                        Log.d("SpeechRecognition", "Recognized Text: " + recognizedText);
+                        if (recognizedText.contains("sign")) {
+                            Log.d("SpeechRecognition", "Redirecting to sign-in page...");
+                            webview.loadUrl("https://accounts.google.com/ServiceLogin");
+                        } else if (recognizedText.contains("back")) {
+                            if (webview.canGoBack()) {
+                                webview.goBack();
+                                Log.e("TAG", "redirecting previous page");
+                            }
+                        } else if (recognizedText.contains("next")) {
+                            if (webview != null && webview.canGoForward()) {
+                                webview.goForward();
+                                Log.e("TAG", "redirecting next page");
+                            }
+                        } else if (previouscmd != null && previouscmd.contains("enter URL")) {
+                            txtinput.requestFocus();
+                            if (recognizedText != null && !recognizedText.isEmpty()) {
+                                String url = recognizedText;
+                                txtinput.setText(url);
+                                Log.e("recognised url", recognizedText);
+                                previouscmd = null;
 
-        speechRecognizer.setRecognitionListener(new RecognitionListener()
-        {
-            @Override
-            public void onReadyForSpeech(Bundle params) {
-                Log.d("SpeechRecognition", "Ready for speech");
-            }
+                                txtinput.setVisibility(View.VISIBLE);
+                                if (TextUtils.isEmpty(url)) {
+                                    Toast.makeText(WebViewActivity.this, "Please enter a valid URL", Toast.LENGTH_SHORT).show();
+                                    return;
+                                }
 
-            @Override
-            public void onBeginningOfSpeech() {
-                Log.d("SpeechRecognition", "Speech started");
-            }
-
-            @Override
-            public void onRmsChanged(float rmsdB) {
-                Log.d("SpeechRecognition", "RMS changed: " + rmsdB);
-            }
-
-            @Override
-            public void onBufferReceived(byte[] buffer) {
-                Log.d("SpeechRecognition", "Buffer received");
-            }
-
-            @Override
-            public void onEndOfSpeech() {
-                Log.d("SpeechRecognition", "Speech ended");
-            }
-
-            @Override
-            public void onError(int error) {
-                Log.e("SpeechRecognition", "Error: " + error);
-            }
-
-            @Override
-            public void onResults(Bundle results) {
-                Log.d("SpeechRecognition", "Results received");
-
-                ArrayList<String> data = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-                if (data != null && !data.isEmpty()) {
-                    String recognizedText = data.get(0);
-                    Log.d("SpeechRecognition", "Recognized Text: " + recognizedText);
-                    if (recognizedText.toLowerCase().contains("sign")) {
-                        Log.d("SpeechRecognition", "Redirecting to sign-in page...");
-                        webview.loadUrl("https://accounts.google.com/ServiceLogin");
-                    } else {
-                        Toast.makeText(WebViewActivity.this, "No relevant command found: " + recognizedText, Toast.LENGTH_SHORT).show();
+                                if (!url.startsWith("http://") && !url.startsWith("https://")) {
+                                    url = "https://www." + url;
+                                }
+                                webview.loadUrl(url);
+                            }
+                            txtinput.setText("");
+                        } else if (recognizedText.contains("enter URL")) {
+                            previouscmd = recognizedText;
+                            txtinput.setVisibility(View.VISIBLE);
+                        } else {
+                            Toast.makeText(WebViewActivity.this, "No relevant command found " + recognizedText, Toast.LENGTH_SHORT).show();
+                            Log.d("Tag", "no relevant command");
+                            initializeSpeechRecognizer();
+                        }
                     }
-                }
+
+                    @Override
+                    public void onReceiveError(@NonNull Error error) {
+
+                    }
+                });
+                speechRecognizer.startRecognition();
             }
-
-            @Override
-            public void onPartialResults(Bundle partialResults) {
-                Log.d("SpeechRecognition", "Partial results received");
-            }
-
-            @Override
-            public void onEvent(int eventType, Bundle params) {
-                Log.d("SpeechRecognition", "Event received");
-            }
-        });
-
-        Log.d("SpeechRecognition", "Starting speech recognition...");
-        speechRecognizer.startListening(speechIntent);
-    }
-
-    private void startListeningForSpeech() {
-        if (speechRecognizer != null) {
-            final Intent speechIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-            speechIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-
-            Log.d("SpeechRecognition", "Starting speech recognition...");
-            speechRecognizer.startListening(speechIntent);
-        } else {
-            Log.e("SpeechRecognition", "SpeechRecognizer is not initialized!");
         }
     }
 
@@ -162,7 +164,8 @@ public class WebViewActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         if (speechRecognizer != null) {
-            speechRecognizer.destroy();
+            speechRecognizer.stopRecognition();
+            speechRecognizer = null;
         }
     }
 
