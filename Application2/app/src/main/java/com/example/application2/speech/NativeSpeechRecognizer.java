@@ -1,0 +1,161 @@
+package com.example.application2.speech;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.speech.RecognitionListener;
+import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
+import android.speech.tts.TextToSpeech;
+import android.util.Log;
+import com.example.application2.DynamicLayout;
+import com.example.application2.SpeechRecognitionClass;
+import com.example.application2.voice.NativeTextToVoiceRecognizer;
+
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+
+public class NativeSpeechRecognizer extends SpeechRecognitionClass implements ISpeechRecognizer {
+    private WeakReference<SpeechRecognitionListener> listenerRef;
+    private SpeechRecognizer speechRecognizer;
+    private WeakReference<Context> contextRef;
+    private NativeTextToVoiceRecognizer nativeTextToVoiceRecognizer;
+    private SpeechRecognitionClass speechRecognitionClass;
+    private TextToSpeech textToSpeech;
+    private NativeSpeechRecognizer nativeSpeechRecognizer ;
+    String recognizedText = "";
+    public NativeSpeechRecognizer(Context context) {
+        super(context);
+        if (context != null) {
+            this.contextRef = new WeakReference<>(context);
+        } else {
+            Log.e("NativeSpeechRecognizer", "Received null context.");
+        }
+    }
+
+
+    public void startRecognition() {
+        Context lContext = contextRef.get();
+        if (lContext != null) {
+            if (speechRecognizer == null) {
+                speechRecognizer = SpeechRecognizer.createSpeechRecognizer(lContext);
+                final Intent speechIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                speechIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                SpeechRecognitionListener listener = listenerRef != null ? listenerRef.get() : null;
+                if (listener == null) {
+                    Log.e("NativeSpeechRecognizer", "Listener is null when starting recognition.");
+                } else {
+                    Log.d("NativeSpeechRecognizer", "Listener is not null when starting recognition.");
+                }
+
+                speechRecognizer.setRecognitionListener(new RecognitionListener() {
+                    @Override
+                    public void onReadyForSpeech(Bundle params) {
+                        Log.d("NativeSpeechRecognizer", "Ready for speech.");
+                    }
+
+                    @Override
+                    public void onBeginningOfSpeech() {
+                        Log.d("NativeSpeechRecognizer", "Speech has begun.");
+                    }
+                    @Override
+                    public void onRmsChanged(float rmsdB) {
+                        Log.d("NativeSpeechRecognizer", "onRmsChanged");
+
+                    }
+
+                    @Override
+                    public void onBufferReceived(byte[] buffer) {
+                    }
+
+                    @Override
+                    public void onEndOfSpeech() {
+                        Log.d("NativeSpeechRecognizer", "Speech has ended.");
+                    }
+                    @Override
+                    public void onError(int error) {
+                        Log.e("NativeSpeechRecognizer", "Error during speech recognition: " + error);
+                        String errorMessage = "";
+                        switch (error) {
+                            case SpeechRecognizer.ERROR_AUDIO:
+                                errorMessage = "Audio recording error. Please check the microphone.";
+                                break;
+                            case SpeechRecognizer.ERROR_CLIENT:
+                                errorMessage = "Client-side error.";
+                                break;
+                            case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
+                                errorMessage = "Insufficient permissions. Please grant microphone access.";
+                                break;
+                            case SpeechRecognizer.ERROR_NETWORK:
+                                errorMessage = "Network error.";
+                                break;
+                            case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
+                                errorMessage = "Speech recognizer is busy.";
+                                break;
+                            default:
+                                errorMessage = "Unknown error occurred.";
+                        }
+                    }
+
+                    @Override
+                    public void onResults(Bundle results) {
+                        ArrayList<String> data = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                        if (data != null && !data.isEmpty()) {
+                            String recognizedText = data.get(0);
+                            Log.d("NativeSpeechRecognizer", "Recognized text: " + recognizedText);
+
+                            if (recognizedText.equalsIgnoreCase("start")) {
+                                Context context = contextRef.get();
+                                if (context != null) {
+                                    Intent intent = new Intent(context, DynamicLayout.class);
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    context.startActivity(intent);
+                                }
+                            }
+                            else {
+                                if(listenerRef != null) {
+                                    listenerRef.get().onReceiveSpeechRecognitionResult(recognizedText);
+                                    //speechRecognizer.startListening(speechIntent);
+                                }else {
+                                    Log.e("Tag","listener is null");
+                                }
+                            }
+                        }
+                    }
+
+
+                    @Override
+                    public void onPartialResults(Bundle partialResults) {
+                    }
+
+                    @Override
+                    public void onEvent(int eventType, Bundle params) {
+                    }
+                });
+
+                Log.d("NativeSpeechRecognizer", "Starting speech recognition.");
+                speechRecognizer.startListening(speechIntent);
+            }
+        } else {
+            Log.e("NativeSpeechRecognizer", "Context is null, cannot initialize SpeechRecognizer.");
+        }
+    }
+
+    @Override
+    public void stopRecognition() {
+        if (speechRecognizer != null) {
+            speechRecognizer.stopListening();
+            speechRecognizer.destroy();
+            speechRecognizer = null;
+        }
+    }
+
+    @Override
+    public void setRecognitionListener(SpeechRecognitionListener listener) {
+        this.listenerRef = new WeakReference<>(listener);
+        if (listener == null) {
+            Log.e("NativeSpeechRecognizer", "Listener is null when setting it.");
+        } else {
+            Log.d("NativeSpeechRecognizer", "Listener successfully set.");
+        }
+    }
+}
