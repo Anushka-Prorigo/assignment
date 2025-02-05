@@ -5,27 +5,49 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
-    <TextView
-        android:id="@+id/txtcardview"
-        android:layout_width="match_parent"
-        android:layout_height="245dp"
-        android:layout_marginTop="30dp"
-        android:width="50dp"
-        android:height="50dp"
-        android:background="@color/cardview_light_background"
-        android:outlineProvider="background"
-        android:text="Tap or Say start tracking to start inspection"
-        android:textAlignment="center"
-        android:textStyle="bold" />
+    tools:context=".MainActivity"
 
-    <ImageView
-        android:src="@drawable/mic"
-        android:id="@+id/mic"
-        android:layout_width="61dp"
-        android:layout_height="74dp"
-        android:layout_alignTop="@+id/txtcardview"
-        android:layout_marginLeft="250dp"
-        android:layout_marginTop="100dp" />
+    android:backgroundTint="@android:color/holo_blue_light"
+    >
+<TextView
+    android:id="@+id/text"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Login Page"
+    android:layout_marginTop="16dp"
+    android:textSize="20dp"
+    android:textStyle="bold"
+    android:textColor="@android:color/holo_blue_dark"
+    android:layout_marginLeft="130dp"
+
+    />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/txtusername"
+        android:hint="Enter username"
+        android:layout_below="@+id/text"
+        android:inputType="textEmailAddress"
+        android:textSize="16dp"
+        />
+
+    <EditText
+        android:id="@+id/txtpassword"
+        android:hint="Enter password"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/txtusername"
+        android:inputType="textPassword"
+        android:textSize="16dp"
+        />
+    <Button
+        android:id="@+id/btnlogin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Login"
+        android:layout_marginLeft="150dp"
+        android:layout_below="@+id/txtpassword"
+        />
 
 </RelativeLayout>

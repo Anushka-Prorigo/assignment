@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <color name="TextColor">#000000</color>
-    <color name="BackgroundColor">#808080</color>
-    <color name="background">#808080</color>
-    <color name="button_startover">#9B9898</color>
-    <color name="button_next">#2196F3</color>
-</resources>
