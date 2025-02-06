@@ -1,6 +1,4 @@
 package com.example.application2.speech;
-
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,20 +13,18 @@ import android.util.Log;
 import com.example.application2.DynamicLayout;
 import com.example.application2.SpeechRecognitionClass;
 import com.example.application2.voice.NativeTextToVoiceRecognizer;
-
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-
-
 public class NativeSpeechRecognizer implements ISpeechRecognizer {
     private WeakReference<SpeechRecognitionListener> listenerRef;
     public SpeechRecognizer speechRecognizer ;
     private WeakReference<Context> contextRef;
     private NativeTextToVoiceRecognizer nativeTextToVoiceRecognizer;
-    private SpeechRecognitionClass speechRecognitionClass;
+    private SpeechRecognitionClass speechRecognitionClass ;
+    private NativeSpeechRecognizer nativeSpeechRecognize;
     private TextToSpeech textToSpeech;
     String recognizedText = "";
-
+    private DynamicLayout dynamicLayout;
     public NativeSpeechRecognizer(Context context) {
         if (context != null) {
             this.contextRef = new WeakReference<>(context);
@@ -40,7 +36,7 @@ public class NativeSpeechRecognizer implements ISpeechRecognizer {
     public void startRecognition() {
         Context lContext = contextRef.get();
         if (lContext != null && speechRecognizer == null) {
-            Handler mainHandler = new Handler(Looper.getMainLooper());
+           Handler mainHandler = new Handler(Looper.getMainLooper());
             mainHandler.post(() -> {
                 if (speechRecognizer == null) {
                     speechRecognizer = SpeechRecognizer.createSpeechRecognizer(lContext);
@@ -111,12 +107,12 @@ public class NativeSpeechRecognizer implements ISpeechRecognizer {
                                 Log.d("NativeSpeechRecognizer", "Recognized text: " + recognizedText);
                                 if (listenerRef != null) {
                                     listenerRef.get().onReceiveSpeechRecognitionResult(recognizedText);
+                                    speechRecognizer = null;
                                 } else {
                                     Log.e("Tag", "listener is null");
                                 }
                             }
                         }
-
                         @Override
                         public void onPartialResults(Bundle partialResults) {
                         }
@@ -134,8 +130,6 @@ public class NativeSpeechRecognizer implements ISpeechRecognizer {
             Log.e("NativeSpeechRecognizer", "Context is null, cannot initialize SpeechRecognizer.");
         }
     }
-
-
     @Override
     public void stopRecognition() {
         if (speechRecognizer != null) {
@@ -144,7 +138,6 @@ public class NativeSpeechRecognizer implements ISpeechRecognizer {
             speechRecognizer = null;
         }
     }
-
     @Override
     public void setRecognitionListener(SpeechRecognitionListener listener) {
         this.listenerRef = new WeakReference<>(listener);

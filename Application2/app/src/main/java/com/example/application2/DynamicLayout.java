@@ -1,7 +1,12 @@
 package com.example.application2;
+import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.speech.SpeechRecognizer;
 import android.util.Log;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -16,6 +21,7 @@ import com.example.application2.voice.NativeTextToVoiceRecognizer;
 public class DynamicLayout extends AppCompatActivity {
     private LinearLayout linearLayout;
     private NativeTextToVoiceRecognizer nativeTextToVoiceRecognizer;
+    private Button save_button;
     private String previousText = "";
     private SpeechRecognitionListener listenerRef;
     private NativeSpeechRecognizer nativeSpeechRecognizer = new NativeSpeechRecognizer(this);
@@ -41,11 +47,13 @@ public class DynamicLayout extends AppCompatActivity {
         public void onReceiveError(@NonNull Error error) {
             Log.e("Tag", "Something wen wrong ..");
         }
-
         @Override
         public void onTTSEngineReady() {
-            String currentText = stepLabels[currentStep];
-            nativeTextToVoiceRecognizer.speak(currentText);
+            Handler mainHandler = new Handler(Looper.getMainLooper());
+            mainHandler.post(() -> {
+                String currentText = stepLabels[currentStep];
+                nativeTextToVoiceRecognizer.speak(currentText);
+            });
         }
     };
     private SpeechRecognitionListener speechRecognitionListener = new SpeechRecognitionListener() {
@@ -58,17 +66,24 @@ public class DynamicLayout extends AppCompatActivity {
             }
             else if (speechText != null && !speechText.isEmpty()) {
                 if (speechText.equalsIgnoreCase("yes")) {
+                    EditText editText1 = (EditText) linearLayout.findViewWithTag(currentStep);
                     Log.d("SpeechRecognition", "previouscmd: " + previousText);
-                    editText.setText(previousText);
+                    editText1.setText(previousText);
                     currentStep++;
-                    addStep(currentStep);
+                    Handler mainHandler = new Handler(Looper.getMainLooper());
+                    mainHandler.post(()-> {
+                        addStep(currentStep);
+                    });
                 } else if (speechText.equalsIgnoreCase("no")) {
                     nativeSpeechRecognizer.startRecognition();
+                } else if (speechText.equalsIgnoreCase("save")) {
+                    Intent intent = new Intent(DynamicLayout.this,MainActivity.class);
+                    startActivity(intent);
                 }
             } else {
                Log.d("Tag","not getting recognized text");
             }
-        }
+        };
 
         @Override
         public void onReceiveError(@NonNull Error error) {
@@ -90,7 +105,7 @@ public class DynamicLayout extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dynamic_layout2);
-
+        save_button=findViewById(R.id.save_button);
         linearLayout = findViewById(R.id.dynamic_layout);
         nativeTextToVoiceRecognizer = new NativeTextToVoiceRecognizer(this);
 
@@ -107,19 +122,29 @@ public class DynamicLayout extends AppCompatActivity {
         super.onSaveInstanceState(outState);
         outState.putInt("currentStep", currentStep);
     }
-    private void addStep(int stepIndex) {
-        if (stepIndex >= stepLabels.length) {
-            return;
-        }
-        TextView textView = new TextView(this);
-        textView.setText(stepLabels[stepIndex]);
-        linearLayout.addView(textView);
+    public void addStep(int stepIndex) {
+             Handler mainHandler = new Handler(Looper.getMainLooper());
+             mainHandler.post(()->{
+            if (stepIndex >= stepLabels.length) {
+                afterfillEditText();
+            }
+            TextView textView = new TextView(this);
+            textView.setText(stepLabels[stepIndex]);
+            linearLayout.addView(textView);
 
-        EditText editText = new EditText(this);
-        editText.setText("");
-        editText.setTextSize(16);
-        linearLayout.addView(editText);
-        editText.setTag(stepIndex);
+            EditText editText = new EditText(this);
+            editText.setText("");
+            editText.setTextSize(16);
+            linearLayout.addView(editText);
+            editText.setTag(stepIndex);
+            nativeTextToVoiceRecognizer.startEngine();
+             });
+    }
+    public void afterfillEditText()
+    {
+        Button save_button = new Button(this);
+        save_button.setText("SAVE");
+        linearLayout.addView(save_button);
     }
     @Override
     protected void onDestroy() {

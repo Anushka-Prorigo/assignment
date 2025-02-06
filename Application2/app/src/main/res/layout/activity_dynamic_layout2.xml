@@ -4,6 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
+    android:id="@+id/LinearLayout"
     android:gravity="start"
     android:layout_gravity="start">
 
@@ -16,10 +17,11 @@
         android:orientation="vertical" />
 
     <Button
-        android:id="@+id/next_button"
+        android:id="@+id/save_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Next" />
+        android:background="@color/BackgroundColor"
+        android:text="Save" />
 
     <Button
         android:id="@+id/startover_button"
