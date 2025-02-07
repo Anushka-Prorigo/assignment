@@ -1,25 +1,20 @@
 package com.example.application2;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
-import android.util.Log;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.example.application2.DynamicLayout;
-import com.example.application2.speech.ISpeechRecognizer;
 import com.example.application2.speech.NativeSpeechRecognizer;
 import com.example.application2.speech.SpeechRecognitionListener;
 import com.example.application2.voice.NativeTextToVoiceRecognizer;
@@ -27,7 +22,7 @@ import com.example.application2.voice.NativeTextToVoiceRecognizer;
 import java.lang.ref.WeakReference;
 
 
-public class MainActivity extends AppCompatActivity implements ISpeechRecognizer {
+public class MainActivity extends AppCompatActivity  {
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 1;
     private SpeechRecognizer speechRecognizer;
     private WeakReference<Context> contextRef;
@@ -48,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements ISpeechRecognizer
             }
         }
         @Override
-        public void onReceiveError(@NonNull Error error) {
+        public void onReceiveError(@NonNull String error) {
 
         }
     };
@@ -87,22 +82,7 @@ public class MainActivity extends AppCompatActivity implements ISpeechRecognizer
             initializeSpeechRecognizer();
         } else {
             initializeSpeechRecognizer();
-            Toast.makeText(this, "Audio permission required for speech recognition", Toast.LENGTH_SHORT).show();
+              Toast.makeText(this, "Audio permission required for speech recognition", Toast.LENGTH_SHORT).show();
         }
-    }
-
-    @Override
-    public void startRecognition() {
-
-    }
-
-    @Override
-    public void stopRecognition() {
-
-    }
-
-    @Override
-    public void setRecognitionListener(@Nullable SpeechRecognitionListener listener) {
-
     }
 }

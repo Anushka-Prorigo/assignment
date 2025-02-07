@@ -12,21 +12,24 @@
         android:layout_marginTop="20dp"
         android:id="@+id/dynamic_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:backgroundTint="@color/background"
         android:orientation="vertical" />
 
     <Button
         android:id="@+id/save_button"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/BackgroundColor"
-        android:text="Save" />
+        android:background="@color/button_next"
+        android:paddingBottom="4dp"
+        android:text="SAVE" />
 
     <Button
-        android:id="@+id/startover_button"
-        android:layout_width="wrap_content"
+        android:id="@+id/next_button"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="StartOver" />
+        android:background="@color/button_startover"
+        android:layout_marginTop="16dp"
+        android:text="NEXT" />
 
 </LinearLayout>

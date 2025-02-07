@@ -57,8 +57,8 @@ public class SpeechRecognitionClass extends AppCompatActivity {
             Log.d("Tag", "recognized text: " + speechResult);
         }
         @Override
-        public void onReceiveError(@NonNull Error error) {
-            Log.e("SpeechRecognitionClass", "Error in recognition: " + error.getMessage());
+        public void onReceiveError(@NonNull String error) {
+            Log.e("SpeechRecognitionClass", "Error in recognition: " + error);
         }
     };
     @SuppressLint("MissingInflatedId")

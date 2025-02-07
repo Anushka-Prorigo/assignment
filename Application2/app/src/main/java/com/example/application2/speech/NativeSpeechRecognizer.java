@@ -25,6 +25,8 @@ public class NativeSpeechRecognizer implements ISpeechRecognizer {
     private TextToSpeech textToSpeech;
     String recognizedText = "";
     private DynamicLayout dynamicLayout;
+    private long lastInputTime;
+
     public NativeSpeechRecognizer(Context context) {
         if (context != null) {
             this.contextRef = new WeakReference<>(context);
@@ -32,16 +34,16 @@ public class NativeSpeechRecognizer implements ISpeechRecognizer {
             Log.e("NativeSpeechRecognizer", "Received null context.");
         }
     }
-    @Override
     public void startRecognition() {
         Context lContext = contextRef.get();
         if (lContext != null && speechRecognizer == null) {
-           Handler mainHandler = new Handler(Looper.getMainLooper());
+            Handler mainHandler = new Handler(Looper.getMainLooper());
             mainHandler.post(() -> {
                 if (speechRecognizer == null) {
                     speechRecognizer = SpeechRecognizer.createSpeechRecognizer(lContext);
                     final Intent speechIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
                     speechIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+
                     SpeechRecognitionListener listener = listenerRef != null ? listenerRef.get() : null;
                     if (listener == null) {
                         Log.e("NativeSpeechRecognizer", "Listener is null when starting recognition.");
@@ -50,16 +52,26 @@ public class NativeSpeechRecognizer implements ISpeechRecognizer {
                     }
 
                     speechRecognizer.setRecognitionListener(new RecognitionListener() {
+                        private Handler timeoutHandler = new Handler();
+                        private Runnable timeoutRunnable = new Runnable() {
+                            @Override
+                            public void run() {
+                                Log.e("NativeSpeechRecognizer", "Speech recognition timed out.");
+                                onError(SpeechRecognizer.ERROR_SPEECH_TIMEOUT);
+                            }
+                        };
                         @Override
                         public void onReadyForSpeech(Bundle params) {
                             Log.d("NativeSpeechRecognizer", "Ready for speech.");
+                            lastInputTime = System.currentTimeMillis();
+                            timeoutHandler.postDelayed(timeoutRunnable, 10000);
                         }
-
                         @Override
                         public void onBeginningOfSpeech() {
                             Log.d("NativeSpeechRecognizer", "Speech has begun.");
+                            lastInputTime = System.currentTimeMillis();
+                            timeoutHandler.removeCallbacks(timeoutRunnable);
                         }
-
                         @Override
                         public void onRmsChanged(float rmsdB) {
                             Log.d("NativeSpeechRecognizer", "onRmsChanged");
@@ -68,12 +80,11 @@ public class NativeSpeechRecognizer implements ISpeechRecognizer {
                         @Override
                         public void onBufferReceived(byte[] buffer) {
                         }
-
                         @Override
                         public void onEndOfSpeech() {
                             Log.d("NativeSpeechRecognizer", "Speech has ended.");
+                            timeoutHandler.removeCallbacks(timeoutRunnable);
                         }
-
                         @Override
                         public void onError(int error) {
                             Log.e("NativeSpeechRecognizer", "Error during speech recognition: " + error);
@@ -94,8 +105,16 @@ public class NativeSpeechRecognizer implements ISpeechRecognizer {
                                 case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
                                     errorMessage = "Speech recognizer is busy.";
                                     break;
+                                case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
+                                case SpeechRecognizer.ERROR_NO_MATCH:
+                                    errorMessage = "No speech detected or recognition timed out.";
+                                    break;
                                 default:
                                     errorMessage = "Unknown error occurred.";
+                            }
+
+                            if (listenerRef != null) {
+                                listenerRef.get().onReceiveError("ErrorMessage: " + error);
                             }
                         }
 
@@ -107,12 +126,13 @@ public class NativeSpeechRecognizer implements ISpeechRecognizer {
                                 Log.d("NativeSpeechRecognizer", "Recognized text: " + recognizedText);
                                 if (listenerRef != null) {
                                     listenerRef.get().onReceiveSpeechRecognitionResult(recognizedText);
-                                    speechRecognizer = null;
                                 } else {
-                                    Log.e("Tag", "listener is null");
+                                    Log.e("Tag", "Listener is null");
                                 }
                             }
+                            timeoutHandler.removeCallbacks(timeoutRunnable);
                         }
+
                         @Override
                         public void onPartialResults(Bundle partialResults) {
                         }

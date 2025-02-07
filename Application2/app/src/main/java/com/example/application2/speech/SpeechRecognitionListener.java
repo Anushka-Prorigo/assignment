@@ -6,5 +6,5 @@ public interface SpeechRecognitionListener {
 
     void onReceiveSpeechRecognitionResult(@NonNull String speechResult);
 
-    void onReceiveError(@NonNull Error error);
+    void onReceiveError(@NonNull String error);
 }

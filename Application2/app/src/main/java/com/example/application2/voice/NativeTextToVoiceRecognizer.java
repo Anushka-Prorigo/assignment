@@ -68,18 +68,12 @@ public class NativeTextToVoiceRecognizer implements ITextToSpeech {
                     textToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
                         @Override
                         public void onStart(String utteranceId) {
-
-
-                                Log.d("texttospeech", "TTS started speaking.");
-
+                            Log.d("texttospeech", "TTS started speaking.");
                         }
-
-
                         @Override
                         public void onDone(String utteranceId) {
                                 Log.d("texttospeech", "TTS finished speaking.");
                                 listenerRef.get().onFinishedSpeaking(utteranceId);
-
                         }
 
                         @Override
@@ -95,9 +89,7 @@ public class NativeTextToVoiceRecognizer implements ITextToSpeech {
                     Log.e("NativeTextToVoiceRecognizer", "TextToSpeech initialization failed with status: " + status);
                 }
             }));
-
     };
-
     @Override
     public void stopEngine() {
         if (textToSpeech != null) {
